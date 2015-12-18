@@ -12,7 +12,7 @@ $user = $users->get("name=superuser"); // Custom repository
 $user->isSuperuser(); // Custom method
 ```
 
-Now it wouldn't be ProcessWire and it's extendable nature, if you couldn't add such conveniences for yourself. In the following I'll show you exactly how to do that, just be aware, that I'll expect a basic understanding of OOP and class inheritance going forward. 
+Now it wouldn't be ProcessWire and its extendable nature, if you couldn't add such conveniences for yourself. In the following I'll show you exactly how to do that, just be aware, that I'll expect a basic understanding of OOP and class inheritance going forward. 
 
 First we'll look at how to create a custom repository api variable and after that we'll go an see how we can add custom methods to those pages, that our new repository as well as the `$pages` api variable will return.
 
@@ -59,9 +59,9 @@ class Events extends PagesType {
 	/**
 	 * Custom method to find by date range
 	 *
-	 * @parem int $start timestamp
-	 * @parem int $end timestamp
-	 * @parem string|null $additionalSelector (optional)
+	 * @param int $start timestamp
+	 * @param int $end timestamp
+	 * @param string|null $additionalSelector (optional)
 	 * @return PageArray
 	 */
 	public function findInDateRange($start, $end, $additionalSelector = null){
@@ -75,9 +75,9 @@ class Events extends PagesType {
 }
 ```
 
-That all there is to it for now. With the strong base implementation of `PagesType` we just need to set our new class to always use our custom template and it's parent page and we're done. This new class will from now on only search the pages, which fit our specified criteria (and optionally the ones passed into the constructor).
+That all there is to it for now. With the strong base implementation of `PagesType` we just need to set our new class to always use our custom template and its parent page and we're done. This new class will from now on only search the pages, which fit our specified criteria (and optionally the ones passed into the constructor).
 
-The second method is for our custom need to search by a timeframe. It's only constructing a selector and then query it's pages for that selector. Notice, that we don't need to specify the template or parent page here anymore. That's already been taken care of.
+The second method is for our custom need to search by a timeframe. It's only constructing a selector and then query its pages for that selector. Notice, that we don't need to specify the template or parent page here anymore. That's already been taken care of.
 
 Now we've a class that does handle all the event management, but we still need another step to actually use it in our templates. We need to instanciate the class and create an api variable to hold it. For that we'll create a `site/init.php` file – if not already existing – and add the following.
 
@@ -177,4 +177,4 @@ Additionally we'll add the following line in the constructor of our `Events` cla
 
 ## Finish up.
 
-Now you've seen that – while it's not that complicated – there's actually quite a bit to setup required. That's the reason why I do not recommended to use this in a holy grail fashion, but rather if you really need. It doesn't make sense to create those classes for types of data you don't need often enought throughout a whole site.
+Now you've seen that – while it's not that complicated – there's actually quite a bit to setup required. That's the reason why I do not recommended to use this in a holy grail fashion, but rather if you really need. It doesn't make sense to create those classes for types of data you don't need often enought throughout your whole site.
