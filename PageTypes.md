@@ -190,4 +190,4 @@ Also as hooks are just runtime replacements for real methods they don't have fea
 
 ## Finish up.
 
-I hope you enjoyed this excursion into some more advanced ProcessWire usage and you learned something new. Maybe this can encourage you to explore the core files of ProcessWire on your own. It can be exciting to not use a magic box anymore, but understand a bit more about what's actually happening.
+I hope you enjoyed this excursion into some more advanced ProcessWire usage and you learned something new. Maybe this can encourage you to explore the core files of ProcessWire on your own. It can be exciting to not use a magic box anymore, but understand a bit about what's actually happening.
