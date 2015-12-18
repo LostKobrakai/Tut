@@ -18,7 +18,7 @@ First we'll look at how to create a custom repository api variable and after tha
 
 ## When to use this approach
 
-Before we start I want to mention, that this approach is not really beneficial if you just want to add a single method here and there. Also it's not recommended to create new classes for any small group of 3-5 pages. This tools, that we'll be using here, are most useful if you know you'll be working with a type of data extensively in a good bunch of code.  
+Before we start I want to mention, that this approach is not really beneficial if you just want to add a single method here and there. Also it's not recommended to create a new repository classes for any small group of 3-5 pages. These classes, that we'll be creating here, are most useful if you know you'll be working with the type of data extensively throughout your site.
 
 ## Custom repository API variable
 
@@ -26,7 +26,7 @@ Now let's get onto the topic. When looking into the source files of those existi
 
 As an example scenario, which will make it easier for me to explain all the settings, we'll imagine we're building a website, which besides some static content does feature an not so small events section. Now we can already guess that we'll often need to work with event pages. Maybe there will be various places, where we need to select events happening in specified timeframes. We don't want to repeat the selector for such a specific selection in all those places, but rather handle them once and reuse the logic later. 
 
-To do so we'll first add an `events.php` file somewhere in the `site/` folder. We'll use `site/api/events.php` for this tutorial. If you're using an class autoloader like composer (or ProcessWire >3.0) than you can use that to load the file, but we'll just simply include the file via the `site/config.php`.<span id="anchor-include"></span>
+To do so we'll first add an `events.php` file somewhere in the `site/` folder. We'll use `site/api/events.php` for this tutorial. If you're using an class autoloader like [composer](https://getcomposer.org/) (or [ProcessWire 3](https://processwire.com/blog/posts/processwire-2.6.20-and-surprise-processwire-3.0-alpha-1/#what-benefits-will-using-namespaces-bring)) than you can use that to load the file, but we'll just simply include the file via the `site/config.php`.<span id="anchor-include"></span>
 
 ```php
 // site/config.php
@@ -51,9 +51,9 @@ class Events extends PagesType {
 	public function __construct($templates = array(), $parents = array()) {
 		parent::__construct($templates, $parents);
 
-		// Make sure we always include the event template and events/ parent page
+		// Make sure we always include the event template and /events/ parent page
 		$this->addTemplates("event");
-		$this->addParents($this->pages->get("events/")->id);
+		$this->addParents($this->pages->get("/events/")->id);
 	}
 
 	/**
@@ -101,22 +101,20 @@ $christmasEvents = $events->findInDateRange($from, $to, "christmas=1");
 
 In this second part of the tutorial we'll add custom methods to the event instances we'll be getting from our new `$events` api variable. For our example we'll be implementing a check if an event does start at the current day, which might be something often required throughout the site.
 
-There are two ways of extending ProcessWire objects – Hooks and inheritance. Technically we could've used hooks for the above setup as well, but I'd not recommend that. But for adding methods to pages it's actually a plausable alternative to inheritance. Therefore I'll include a short example on how to hook methods in here as well.
+There are two ways of extending ProcessWire objects – Hooks and inheritance. Technically we could've used hooks for the above setup as well, but I'd not recommend that for reasons I'll explain at the end of the tutorial. But for adding few methods to pages hooking is actually a plausable alternative to inheritance. Therefore I'll include a short example on how to hook methods in here as well.
 
 ### Hooking
 
 ```php
 // site/init.php
 …
-$wire->addHook("Page::startsToday", function(HookEvent $event){
+$wire->addHook("Page(template=event)::startsToday", function(HookEvent $event){
 	$page = $event->object;
-	if($page->template != 'event') return;
-
 	return $event->return = date("Y-m-d", $page->getUnformatted("startdate")) == date("Y-m-d");
 });
 ```
 
-As you can see, we're just adding a new method to all pages, but if such a page is not an event, we'll just return `null`. That's a fine way to go as long as the number or complexity of those methods doesn't grow much more. Imagine fetching multiple parameter values of a custom method from the injected `HookEvent` and maybe doing all the type checking manually. That's a good bulk of boilerplate code just to get to match what a class method does do without even looking at the function body. Also for each new method, we would add to events, we would need to implement the check for the correct template, which can easily lead to lot's of code duplication.
+We're using a [conditional](https://processwire.com/blog/posts/new-ajax-driven-inputs-conditional-hooks-template-family-settings-and-more/#new-conditional-hooks) hook here. This means we're adding the new method to all page objects, but if the a page the method is called on is not an event, we'll just return `null`.
 
 ### Inheritance
 
@@ -135,7 +133,7 @@ class Event extends Page{
 	 */
 	public function __construct(Template $tpl = null) {
 		if(is_null($tpl)) $tpl = $this->templates->get('event'); 
-		if(!$this->parent_id) $this->set('parent_id', $this->pages->get("events/")->id); 
+		if(!$this->parent_id) $this->set('parent_id', $this->pages->get("/events/")->id); 
 		parent::__construct($tpl); 
 	}
 
@@ -150,7 +148,7 @@ class Event extends Page{
 }
 ```
 
-As you can see, this is quite similar to the other class above. We make sure, that even without the constructor paramter we'll instanciate the class for the correct parent page and template and we've added the same method we added by the hook before, just in a much more readable fashion.
+As you can see, this is quite similar to the other class above. We make sure, that even without the constructor parameter we'll instanciate the class for the correct parent page and template and we've added the same method we added by the hook before, just in a much more readable fashion.
 
 With that class we can now do things like that:
 
@@ -174,6 +172,14 @@ Additionally we'll add the following line in the constructor of our `Events` cla
 	}
 …
 ```
+
+## Why not use hooks
+
+Before I end here I want to cover the reasons why I sometimes favor inheritance over hooks. Hooks are great, but have some backdraws especially for more complex systems, which benefit most from those classes we've created.
+
+The syntax of hooks, while being quite easy to use, is still harder to reason about when glancing over it and even more if you're not familiar with the codebase. Imagine a method with three or even more parameters and you need to first retrieve all of them from the injected `HookEvent` object and test them against `null` to be sure they're even provided. If you need default values, you need to create the logic manually as well.
+
+Also as hooks are just runtime replacements for real methods they don't have features like visibility properties (`public`, `protected` and `private`) or type hinting. While really a lot of functions can already be hooked for example the constructors cannot and we did change the constructor logic in both of our classes.
 
 ## Finish up.
 
