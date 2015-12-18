@@ -18,7 +18,7 @@ First we'll look at how to create a custom repository api variable and after tha
 
 ## When to use this approach
 
-Before we start I want to mention, that this approach is not really beneficial if you just want to add a single method here and there. Also it's not recommended to create a new repository classes for any small group of 3-5 pages. These classes, that we'll be creating here, are most useful if you know you'll be working with the type of data extensively throughout your site.
+Before we start I want to mention, that this approach is not really beneficial if you just want to add a single method here and there. Also it's not recommended to create a new repository classes for any small group of 3-5 pages. These classes, that we'll be creating here, are most useful if you know you'll be working with the type of data extensively throughout your site. Otherwise it may not be worth the effort.
 
 ## Custom repository API variable
 
@@ -77,7 +77,7 @@ class Events extends PagesType {
 
 That all there is to it for now. With the strong base implementation of `PagesType` we just need to set our new class to always use our custom template and its parent page and we're done. This new class will from now on only search the pages, which fit our specified criteria (and optionally the ones passed into the constructor).
 
-The second method is for our custom need to search by a timeframe. It's only constructing a selector and then query its pages for that selector. Notice, that we don't need to specify the template or parent page here anymore. That's already been taken care of.
+The second method is for our custom need to search by a timeframe. It's only building up a selector and then query its pages for that selector. Notice, that we don't need to specify the template or parent page here anymore. That's already been taken care of.
 
 Now we've a class that does handle all the event management, but we still need another step to actually use it in our templates. We need to instanciate the class and create an api variable to hold it. For that we'll create a `site/init.php` file – if not already existing – and add the following.
 
@@ -92,9 +92,16 @@ $this->wire('events', $events, true);
 Now everywhere, where the ProcessWire api variables are present, there will additionally be a `$events` or `wire('events')` variable present and we can simply call our custom find method to retrieve some christmas events.
 
 ```php
+<?php
+// site/templates/someTemplate.php
+
 $from = strtotime('2015-12-01');
 $to = strtotime('2015-12-24');
 $christmasEvents = $events->findInDateRange($from, $to, "christmas=1");
+
+echo "<ul>";
+echo $christmasEvents->implode("<li><a href='{url}'>{title}</a></li>");
+echo "</ul>";
 ```
 
 ## Custom methods for events
@@ -114,7 +121,7 @@ $wire->addHook("Page(template=event)::startsToday", function(HookEvent $event){
 });
 ```
 
-We're using a [conditional](https://processwire.com/blog/posts/new-ajax-driven-inputs-conditional-hooks-template-family-settings-and-more/#new-conditional-hooks) hook here. This means we're adding the new method to all page objects, but if the a page the method is called on is not an event, we'll just return `null`.
+We're using a [conditional hook](https://processwire.com/blog/posts/new-ajax-driven-inputs-conditional-hooks-template-family-settings-and-more/#new-conditional-hooks) here. This means ProcessWire will make it look like the method does not exist on a page, which isn't an event, and return a result just in the case it is one. This is the way I'd recommend for one-of additions.
 
 ### Inheritance
 
@@ -183,4 +190,4 @@ Also as hooks are just runtime replacements for real methods they don't have fea
 
 ## Finish up.
 
-Now you've seen that – while it's not that complicated – there's actually quite a bit to setup required. That's the reason why I do not recommended to use this in a holy grail fashion, but rather if you really need. It doesn't make sense to create those classes for types of data you don't need often enought throughout your whole site.
+I hope you enjoyed this excursion into some more advanced ProcessWire usage and you learned something new. Maybe this can encourage you to explore the core files of ProcessWire on your own. It can be exciting to not use a magic box anymore, but understand a bit more about what's actually happening.
