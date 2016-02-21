@@ -188,33 +188,7 @@ The syntax of hooks, while being quite easy to use, is still harder to reason ab
 
 Also as hooks are just runtime replacements for real methods they don't have features like visibility properties (`public`, `protected` and `private`) or type hinting. While really a lot of functions can already be hooked for example the constructors cannot and we did change the constructor logic in both of our classes.
 
-### Interfaces
-
-If you're building a larger scale application in ProcessWire there's also a last reason to not use hooking. It's the usage of interfaces. OOP principles state that you shouldn't depend on concrete class implementations, but rather on abstract interfaces. Staying with the events example from above you may want to create a class, which shall remind attending people about the event a few days in advance. You might want to type-hint the class to only receive events, which works short term, but maybe later you also want to remind people of pending meetings as well. Therefore it's better to accept an interface `RemindableInterface` instead of just the class `Event`. The only way for a `Page` object to adhere to such an interface is by creating a class like we did above. Hooks could only add the method, but not add the interface.
-
-```php
-<?php
-// site/api/event.php
-
-class Event extends Page implements RemindableInterface{
-
-	…
-
-	/**
-	 * Event implementation of the interface
-	 *
-	 * @return array List of emails and optional names of people to be reminded
-	 */
-	public function getEmailsToBeReminded() {
-		return $this->registered_people->explode(function($attendee){
-			return array(
-				"name" => $attendee->fullname,
-				"email" => $attendee->email
-			);
-		});
-	}
-}
-```
+A last advantage of a custom class is the ability to adhere to any interface you might be using in your application. Say you've a third party library, which does accept an interface as input. You can now go ahead an implement that interface for a specific page type and after that simply pass these pages into the library.
 
 ## Finish up.
 
