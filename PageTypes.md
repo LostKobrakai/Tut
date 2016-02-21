@@ -188,7 +188,7 @@ The syntax of hooks, while being quite easy to use, is still harder to reason ab
 
 Also as hooks are just runtime replacements for real methods they don't have features like visibility properties (`public`, `protected` and `private`) or type hinting. While really a lot of functions can already be hooked for example the constructors cannot and we did change the constructor logic in both of our classes.
 
-A last advantage of a custom class is the ability to adhere to any interface you might be using in your application. Say you've a third party library, which does accept an interface as input. You can now go ahead an implement that interface for a specific page type and after that simply pass these pages into the library.
+A last advantage of a custom class is the ability to adhere to any interface you might be using in your application. Say you've a third party library, which does accept an interface as input. You can now go ahead an implement that interface for a specific page type and after that simply pass these pages into the library. Same goes for our custom repository.
 
 ## Finish up.
 
